@@ -28,6 +28,9 @@ type t = {
   length : int;
   bits   : int array }
 
+let get_bits v =
+  v.bits
+
 let length v = v.length
 
 (*s Each element of the array is an integer containing [bpi] bits, where
@@ -351,10 +354,13 @@ let rec naive_pop x =
 let pop16 = Array.init 0x10000 naive_pop
 let pop16 n = Array.unsafe_get pop16 n
 
-let popi x = match Sys.word_size with
-  | 32 -> pop16 (x land 0xffff) + pop16 ((x lsr 16) land 0xffff)
-  | 64 -> pop16 (x land 0xffff) + pop16 ((x lsr 16) land 0xffff)
-        + pop16 ((x lsr 32) land 0xffff) + pop16 ((x lsr 48) land 0xffff)
+let popi32 x = pop16 (x land 0xffff) + pop16 ((x lsr 16) land 0xffff)
+let popi64 x = pop16 (x land 0xffff) + pop16 ((x lsr 16) land 0xffff)
+             + pop16 ((x lsr 32) land 0xffff) + pop16 ((x lsr 48) land 0xffff)
+
+let popi = match Sys.word_size with
+  | 64 -> popi64
+  | 32 -> popi32
   | _ -> assert false
 
 let pop v =
